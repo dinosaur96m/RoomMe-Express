@@ -4,19 +4,21 @@ const crypto = require('crypto')
 
 const passport = require('passport')
 
-const bcrypt = require('bcrypt')
-const bccryptSaltRounds = 10
+// const bcrypt = require('bcrypt')
+// const bccryptSaltRounds = 10
 
 // pull in error types and the logic to handle them and set status codes
 const errors = require('../../lib/custom_errors')
+const customErrors = require('../../lib/custom_errors')
+const handle404 = customErrors.handle404
+const requireOwnership = customErrors.requireOwnership
 
-const BadParamsError = errors.BadParamsError
-const BadCredentialsError = errors.BadCredentialsError
-
+// import Furniture model
 const Furniture = require('../models/furniture')
-const furniture = require('../models/furniture')
 
+// authenticate user
 const requireToken = passport.authenticate('bearer', { session: false })
+
 
 const router = express.Router()
 
@@ -32,7 +34,8 @@ router.get('/furniture', (req, res, next) => {
 })
 
 // POST
-router.post('/furniture', (req, res, next) => {
+router.post('/furniture', requireToken, (req, res, next) => {
+    req.body.furniture.owner = req.user.id
     Furniture.create(req.body.furniture)
     .then((furniture) =>{
         res.status(201).json({
@@ -42,5 +45,19 @@ router.post('/furniture', (req, res, next) => {
     // if an error occurs, pass it to the handler
     .catch(next)
 
+})
+
+// DELETE
+router.delete('/furniture/:id', requireToken, (req, res, next) => {
+    Furniture.findById(req.params.id)
+        .then(errors.handle404)
+        .then((furniture) => {
+            errors.requireOwnership
+            furniture.deleteOne()
+        })
+        // 204 if deletion successful
+        .then(() => res.sendStatus(204))
+        // pass errors to handler
+        .catch(next)
 })
 module.exports = router

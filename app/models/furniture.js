@@ -18,7 +18,7 @@ const furnitureSchema = new mongoose.Schema(
             type: String,
             required: false
         },
-        dinmensions: {
+        dimensions: {
             type: [Number],
             required: true,
         },
