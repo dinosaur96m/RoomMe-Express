@@ -47,6 +47,36 @@ router.post('/furniture', requireToken, (req, res, next) => {
 
 })
 
+// SHOW
+router.get('/furniture/:id', (req, res, next) => {
+	Furniture.findById(req.params.id)
+		.then(handle404)
+		// respond with 200 status and found object
+		.then((furniture) => res.status(200).json({ furniture: furniture.toObject() }))
+		// passs errors to handler
+		.catch(next)
+})
+
+// PATCH
+router.patch('/furniture/:id', requireToken, (req, res, next) => {
+    	// if the client attempts to change the `owner` property by including a new
+	// owner, prevent that by deleting that key/value pair
+	delete req.body.furniture.owner
+
+	Furniture.findById(req.params.id)
+		.then(handle404)
+		.then((furniture) => {
+			// pass the `req` object and the Mongoose record to `requireOwnership`
+			// requireOwnership(req, furniture)
+			// pass the result of Mongoose's `.update` to the next `.then`
+			return furniture.updateOne(req.body.furniture)
+		})
+		// if that succeeded, return 204 and no JSON
+		.then(() => res.sendStatus(204))
+		// if an error occurs, pass it to the handler
+		.catch(next)
+})
+
 // DELETE
 router.delete('/furniture/:id', requireToken, (req, res, next) => {
     Furniture.findById(req.params.id)
