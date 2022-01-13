@@ -11,6 +11,9 @@ const furnitureRoutes = require('./app/routes/furniture_routes')
 const errorHandler = require('./lib/error_handler')
 const replaceToken = require('./lib/replace_token')
 const requestLogger = require('./lib/request_logger')
+// require packages for socket
+const webSocketServer = require('websocket').server
+const http = require('http')
 
 // require database configuration logic
 // `db` will be the actual Mongo URI as a string
@@ -23,6 +26,51 @@ const auth = require('./lib/auth')
 // used for cors and local port declaration
 const serverDevPort = 8000
 const clientDevPort = 3000
+// define socket port
+const webSocketServerPort = 8500
+
+// instantiate socket server
+const server = http.createServer()
+server.listen(webSocketServerPort)
+console.log('sockets running on 8.5k')
+
+const wsServer = new webSocketServer({
+    httpServer: server
+})
+
+// store active connections
+const clients = {}
+
+// generate random number id for each user on socket
+const getUniqueID = () => {
+    const s4 = () => Math.floor((1 + Math.random()) * 10000).toString(16).substring(1)
+    return s4() + s4() + '-' + s4()
+}
+
+// handle socket requests
+wsServer.on('request', (request) => {
+    const userID = getUniqueID()
+    console.log((new Date()) + 'New connection from origin ' + request.origin + '.')
+
+    const connection = request.accept(null, request.origin)
+    clients[userID] = connection
+    console.log('connected: ' + userID + ' in ' + Object.getOwnPropertyNames(clients))
+
+	// send messages to all clients connected to the socket
+	connection.on('message', (message) => {
+		if (message.type === 'utf8') {
+			console.log('Received Message: ', message.utf8Data)
+			
+			for(key in clients) {
+				clients[key].sendUTF(message.utf8Data)
+				console.log('sent Message to: ', clients[key])
+			}
+		}
+	})
+})
+
+
+
 
 // establish database connection
 // use new version of URL parser
