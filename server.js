@@ -69,9 +69,6 @@ wsServer.on('request', (request) => {
 	})
 })
 
-
-
-
 // establish database connection
 // use new version of URL parser
 // use createIndex instead of deprecated ensureIndex
