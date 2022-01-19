@@ -29,10 +29,11 @@ const serverDevPort = 8000
 const clientDevPort = 3000
 // define socket port
 const webSocketServerPort = 8500
-
+//
+const sPort = process.env.S_PORT || webSocketServerPort
 // instantiate socket server
 const server = http.createServer()
-server.listen(webSocketServerPort)
+server.listen(sPort)
 console.log('sockets running on 8.5k')
 
 const wsServer = new webSocketServer({
