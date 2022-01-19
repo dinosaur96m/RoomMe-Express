@@ -4,7 +4,6 @@ const mongoose = require('mongoose')
 const cors = require('cors')
 
 // require route files
-const exampleRoutes = require('./app/routes/example_routes')
 const userRoutes = require('./app/routes/user_routes')
 const furnitureRoutes = require('./app/routes/furniture_routes')
 // require middleware
@@ -18,6 +17,8 @@ const http = require('http')
 // require database configuration logic
 // `db` will be the actual Mongo URI as a string
 const db = require('./config/db')
+// require mongoose connections
+const mongoConnection = require('./app/models/index')
 
 // require configured passport authentication middleware
 const auth = require('./lib/auth')
@@ -110,7 +111,6 @@ app.use(express.urlencoded({ extended: true }))
 app.use(requestLogger)
 
 // register route files
-app.use(exampleRoutes)
 app.use(userRoutes)
 app.use(furnitureRoutes)
 
